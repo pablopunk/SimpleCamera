@@ -22,12 +22,11 @@ class ViewController: UIViewController {
     var currentISO:CGFloat = 100 // para controlar el ISO (de minimo a maximo)
     var currentTimeVal:Int64 = 4 // tiempo
     var timeScale:Int32 = 60     // escala
-    var currentTime:CMTime = CMTimeMake(0, 60); // (tiempo, escala)
     let stepISO:CGFloat = 0.1 // Cuan rapido aumentas y disminuyes
     var maxISO:CGFloat = 0.0 // Maximo ISO
     var minISO:CGFloat = 0.0 // Minimo ISO
-    var minTime:CMTime = CMTimeMake(0, 60); // Minimo tiempo
-    var maxTime:CMTime = CMTimeMake(0, 60); // Maximo tiempo
+    var minTimeValue:Int64 = 1; // Minimo tiempo
+    var maxTimeValue:Int64 = 1; // Maximo tiempo
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -48,6 +47,10 @@ class ViewController: UIViewController {
         } else {
             // no hay dispositivos de video
         }
+        
+        // Reconocer el single tap
+        var tapgesture = UITapGestureRecognizer(target: self, action: "tapDetected")
+        self.view.addGestureRecognizer(tapgesture)
     }
     
     func beginSession() { // Empezar la captura
@@ -74,9 +77,8 @@ class ViewController: UIViewController {
             device.unlockForConfiguration()
             minISO = CGFloat(device.activeFormat.minISO) // Valor maximo de ISO
             maxISO = CGFloat(device.activeFormat.maxISO) // Valor minimo de ISO
-            minTime = device.activeFormat.minExposureDuration
-            maxTime = device.activeFormat.maxExposureDuration
-            currentTime = CMTimeMake(currentTimeVal, timeScale);
+            minTimeValue = device.activeFormat.minExposureDuration.value
+            maxTimeValue = device.activeFormat.maxExposureDuration.value
         }
     }
     
@@ -94,17 +96,18 @@ class ViewController: UIViewController {
     func exposeTo(value : Float) { // Cambia el enfoque
         if let device = captureDevice {
             if(device.lockForConfiguration(nil)) {
-                if (value < Float(currentISO)) { // Disminuye ISO?
-                    
-                } else { // Aumenta ISO?
-                    
-                }
-                device.setExposureModeCustomWithDuration(currentTime, ISO: value, completionHandler: { (time) -> Void in
+                // 
+                device.setExposureModeCustomWithDuration(CMTimeMake(calcularTime(value),timeScale), ISO: value, completionHandler: { (time) -> Void in
                     //
                 })
                 device.unlockForConfiguration()
             }
         }
+    }
+    
+    func calcularTime(iso: Float) -> Int64 { // Calcular tiempo de exposicion segun el ISO
+        var tiempo = iso / Float(maxISO - minISO) * (Float(minTimeValue)-1) + Float(maxTimeValue)
+        return Int64(tiempo)
     }
     
     func calcularEnfoque(prevLocation: CGFloat, conCambio cambio: CGFloat) {
@@ -143,7 +146,6 @@ class ViewController: UIViewController {
             currentISO = checkbounds
         }
         exposeTo(Float(currentISO))
-        println(currentISO)
     }
     
     override func touchesMoved(touches: NSSet, withEvent event: UIEvent) {
@@ -157,6 +159,13 @@ class ViewController: UIViewController {
             calcularISO(prevLocation, conCambio: cambio)
         }
         
+    }
+    
+    // Detectar el single tap -> SACAR FOTO
+    func tapDetected() {
+        if let device = captureDevice {
+            // Sacar foto
+        }
     }
 
     override func didReceiveMemoryWarning() {
