@@ -13,6 +13,8 @@
 		173760881A717D5A00E2BE75 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 173760871A717D5A00E2BE75 /* Images.xcassets */; };
 		1737608B1A717D5A00E2BE75 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 173760891A717D5A00E2BE75 /* LaunchScreen.xib */; };
 		173760971A717D5A00E2BE75 /* Simple_CameraTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 173760961A717D5A00E2BE75 /* Simple_CameraTests.swift */; };
+		175758101A71DC3C00A3A576 /* flash on.png in Resources */ = {isa = PBXBuildFile; fileRef = 1757580E1A71DC3C00A3A576 /* flash on.png */; };
+		175758111A71DC3C00A3A576 /* flash off.png in Resources */ = {isa = PBXBuildFile; fileRef = 1757580F1A71DC3C00A3A576 /* flash off.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +38,8 @@
 		173760901A717D5A00E2BE75 /* Simple CameraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Simple CameraTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		173760951A717D5A00E2BE75 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		173760961A717D5A00E2BE75 /* Simple_CameraTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simple_CameraTests.swift; sourceTree = "<group>"; };
+		1757580E1A71DC3C00A3A576 /* flash on.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "flash on.png"; sourceTree = "<group>"; };
+		1757580F1A71DC3C00A3A576 /* flash off.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "flash off.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +94,7 @@
 		1737607E1A717D5A00E2BE75 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				1757580D1A71DC3300A3A576 /* img */,
 				1737607F1A717D5A00E2BE75 /* Info.plist */,
 			);
 			name = "Supporting Files";
@@ -110,6 +115,15 @@
 				173760951A717D5A00E2BE75 /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		1757580D1A71DC3300A3A576 /* img */ = {
+			isa = PBXGroup;
+			children = (
+				1757580E1A71DC3C00A3A576 /* flash on.png */,
+				1757580F1A71DC3C00A3A576 /* flash off.png */,
+			);
+			name = img;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -192,8 +206,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				175758111A71DC3C00A3A576 /* flash off.png in Resources */,
 				173760861A717D5A00E2BE75 /* Main.storyboard in Resources */,
 				1737608B1A717D5A00E2BE75 /* LaunchScreen.xib in Resources */,
+				175758101A71DC3C00A3A576 /* flash on.png in Resources */,
 				173760881A717D5A00E2BE75 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -407,6 +423,7 @@
 				1737609C1A717D5A00E2BE75 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		1737609D1A717D5A00E2BE75 /* Build configuration list for PBXNativeTarget "Simple CameraTests" */ = {
 			isa = XCConfigurationList;
@@ -415,6 +432,7 @@
 				1737609F1A717D5A00E2BE75 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

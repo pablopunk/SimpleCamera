@@ -12,7 +12,10 @@ import AVFoundation // para la camara
 class ViewController: UIViewController {
     
     let captureSession = AVCaptureSession()
-    var captureDevice : AVCaptureDevice? // Para guardar el dispositivo que usamos
+    var captureDevice : AVCaptureDevice? // La camara que usamos
+    var backCaptureDevice  : AVCaptureDevice? // Back camera
+    var frontCaptureDevice : AVCaptureDevice? // Front camera
+    var captureOutput : AVCaptureStillImageOutput? // Para la captura
     let screenWidth = UIScreen.mainScreen().bounds.size.width // ancho de la pantalla
     let screenHeight = UIScreen.mainScreen().bounds.size.height // largo de la pantalla
     
@@ -28,37 +31,76 @@ class ViewController: UIViewController {
     var minTimeValue:Int64 = 1; // Minimo tiempo
     var maxTimeValue:Int64 = 1; // Maximo tiempo
     
+    var flasheoV = UIView() // vista del flasheo
+    var buttonsView = UIView() // vista de botones
+    var botonFlash = UIButton() // boton del flash
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
+        
+        configurarListeners() // listeners
+        configurarSession() // sesion
+        configurarVista() // vistas
+    }
+    
+    func configurarListeners() { // Para reconocer gestos, etc
+        // Reconocer el single tap
+        var tapgesture = UITapGestureRecognizer(target: self, action: "tapDetected")
+        self.view.addGestureRecognizer(tapgesture)
+//        // Reconocer el long press
+//        var longpressgesture = UILongPressGestureRecognizer(target: self, action: "longPressDetected")
+//        self.view.addGestureRecognizer(longpressgesture)
+    }
+    
+    func configurarSession() { // Settings de la sesion de la captura
         let devices = AVCaptureDevice.devices() // Dispositivos disponibles
         
         for device in devices { // Loop through all the capture devices on this phone
             if (device.hasMediaType(AVMediaTypeVideo)) { // Make sure this particular device supports video
                 if(device.position == AVCaptureDevicePosition.Back) { // back camera
-                    captureDevice = device as? AVCaptureDevice
+                    backCaptureDevice = device as? AVCaptureDevice
+                } else if (device.position == AVCaptureDevicePosition.Front) {
+                    frontCaptureDevice = device as? AVCaptureDevice
                 }
             }
         }
+        
+        // Por defecto tenemos la camara trasera
+        captureDevice = backCaptureDevice
         
         if captureDevice != nil { // si hemos encontrado un dispositivo de video
             beginSession()
         } else {
             // no hay dispositivos de video
         }
-        
-        // Reconocer el single tap
-        var tapgesture = UITapGestureRecognizer(target: self, action: "tapDetected")
-        self.view.addGestureRecognizer(tapgesture)
+
     }
     
-    func beginSession() { // Empezar la captura
+    func configurarVista() {
+        // Flashear pantalla
+        flasheoV = UIView(frame: CGRectMake(0, 0, screenWidth, screenHeight))
+        flasheoV.alpha = 0.0
+        flasheoV.backgroundColor = UIColor.whiteColor()
+        self.view.addSubview(flasheoV)
+        
+        // Botones
+        buttonsView = UIView(frame: CGRectMake(0, 0, screenWidth/8.0, screenHeight))
+        //buttonsView.backgroundColor = UIColor.whiteColor()
+        self.view.addSubview(buttonsView)
+        
+        // Boton flash
+        botonFlash = UIButton(frame: CGRectMake(5, 25, 35.0, 35.0))
+        botonFlash.setBackgroundImage(UIImage(named: "flash off.png"), forState: .Normal)
+        botonFlash.addTarget(self, action: "changeFlash", forControlEvents:.TouchUpInside)
+        buttonsView.addSubview(botonFlash)
+    }
+    
+    func beginSession() { // Empezar la sesion
         var err : NSError? = nil
         captureSession.addInput(AVCaptureDeviceInput(device: captureDevice, error: &err))
         configureDevice() // Configuraciones de camara
-        focusTo(Float(currentFocus))
-        exposeTo(Float(currentISO))
         
         if err != nil {
             println("error: \(err?.localizedDescription)")
@@ -67,28 +109,42 @@ class ViewController: UIViewController {
         var previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
         self.view.layer.addSublayer(previewLayer)
         previewLayer?.frame = self.view.layer.frame
+        
+        // configurar la salida
+        captureOutput = AVCaptureStillImageOutput()
+        var settings: [String: String] = [AVVideoCodecJPEG : AVVideoCodecKey]
+        captureOutput?.outputSettings = settings
+        captureSession.addOutput(captureOutput)
+        
+        //
         captureSession.startRunning()
     }
     
     func configureDevice() { // Configurar la camara
         if let device = captureDevice {
-            device.lockForConfiguration(nil)
-            device.focusMode = .Locked
-            device.unlockForConfiguration()
+            if device.isFocusModeSupported(AVCaptureFocusMode.Locked) { // Soporta el enfoque manua
+                device.lockForConfiguration(nil)
+                device.focusMode = .Locked
+                device.unlockForConfiguration()
+            }
             minISO = CGFloat(device.activeFormat.minISO) // Valor maximo de ISO
             maxISO = CGFloat(device.activeFormat.maxISO) // Valor minimo de ISO
             minTimeValue = device.activeFormat.minExposureDuration.value
             maxTimeValue = device.activeFormat.maxExposureDuration.value
+            focusTo(Float(currentFocus))
+            exposeTo(Float(currentISO))
         }
     }
     
     func focusTo(value : Float) { // Cambia el enfoque
         if let device = captureDevice {
-            if(device.lockForConfiguration(nil)) {
-                device.setFocusModeLockedWithLensPosition(value, completionHandler: { (time) -> Void in
-                    //
-                })
-                device.unlockForConfiguration()
+            if device.isFocusModeSupported(AVCaptureFocusMode.Locked) { // Soporta el enfoque manua
+                if(device.lockForConfiguration(nil)) {
+                    device.setFocusModeLockedWithLensPosition(value, completionHandler: { (time) -> Void in
+                        //
+                    })
+                    device.unlockForConfiguration()
+                }
             }
         }
     }
@@ -163,9 +219,100 @@ class ViewController: UIViewController {
     
     // Detectar el single tap -> SACAR FOTO
     func tapDetected() {
-        if let device = captureDevice {
-            // Sacar foto
+        flashScreen() // flash en la pantalla
+        
+        if let output = captureOutput {
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { // Otro hilo para no colgar la UI
+                
+                output.captureStillImageAsynchronouslyFromConnection(output.connectionWithMediaType(AVMediaTypeVideo)){
+                    (imageSampleBuffer : CMSampleBuffer!, _) in
+                    
+                    if imageSampleBuffer != nil {
+                        var imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageSampleBuffer)
+                        var image = UIImage(data: imageData)
+                        var deviceorientation = UIDevice.currentDevice().orientation
+                        var imageSave = UIImage()
+                        
+                        switch(deviceorientation.rawValue) {
+                            case 1: // Portrait
+                                imageSave = UIImage(CGImage: image?.CGImage, scale: CGFloat(1.0), orientation: .Right)!
+                            case 2: // Portrait al reves
+                                imageSave = UIImage(CGImage: image?.CGImage, scale: CGFloat(1.0), orientation: .Left)!
+                            case 3: // Landscape izq
+                                imageSave = UIImage(CGImage: image?.CGImage, scale: CGFloat(1.0), orientation: .Up)!
+                            case 4: // Landscape der
+                                imageSave = UIImage(CGImage: image?.CGImage, scale: CGFloat(1.0), orientation: .Down)!
+                            default:
+                                print(" -> Error al reconocer device orientation")
+                        }
+                        UIImageWriteToSavedPhotosAlbum(imageSave, self, nil, nil)
+                    }
+                }
+            }
         }
+    }
+    
+//    // Long press -> cambiar camara
+//    func longPressDetected() {
+//        if let device = captureDevice {
+//            captureSession.removeInput(AVCaptureDeviceInput(device: captureDevice, error: nil))
+//            if device.position == AVCaptureDevicePosition.Back { // De back a front
+//                captureDevice = frontCaptureDevice
+//                botonFlash.hidden = true // ocultamos el flash
+//                configureDevice()
+//                beginSession()
+//            } else { // de front a back
+//                if frontCaptureDevice != nil {
+//                    captureDevice = backCaptureDevice
+//                    botonFlash.hidden = false // mostramos el flash
+//                    configureDevice()
+//                    beginSession()
+//                }
+//            }
+//        }
+//    }
+    
+    // Al sacar la foto, sale un flash en la pantalla
+    func flashScreen() {
+        flasheoV.alpha = 1.0;
+        UIView.beginAnimations(nil, context: nil)
+        UIView.setAnimationDuration(0.6);
+        flasheoV.alpha = 0.0;
+        UIView.commitAnimations()
+    }
+    
+    // Cambiar el estado del flash
+    func changeFlash() {
+        if let device = captureDevice {
+            if device.flashMode == AVCaptureFlashMode.On {
+                setFlashOff() // Apagar
+                botonFlash.setBackgroundImage(UIImage(named: "flash off.png"), forState: .Normal)
+            } else {
+                setFlashOn() // Encender
+                botonFlash.setBackgroundImage(UIImage(named: "flash on.png"), forState: .Normal)
+            }
+        }
+    }
+    
+    // Encender el flash
+    func setFlashOn() {
+        if let device = captureDevice {
+            device.lockForConfiguration(nil)
+            device.flashMode = AVCaptureFlashMode.On;
+            device.unlockForConfiguration()
+        }
+    }
+    
+    // Apagar el flash
+    func setFlashOff() {
+        if let device = captureDevice {
+            device.lockForConfiguration(nil)
+            device.flashMode = AVCaptureFlashMode.Off;
+            device.unlockForConfiguration()
+        }
+    }
+    
+    override func didRotateFromInterfaceOrientation(fromInterfaceOrientation: UIInterfaceOrientation) {
     }
 
     override func didReceiveMemoryWarning() {
