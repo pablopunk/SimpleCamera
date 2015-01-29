@@ -15,6 +15,8 @@
 		173760971A717D5A00E2BE75 /* Simple_CameraTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 173760961A717D5A00E2BE75 /* Simple_CameraTests.swift */; };
 		175758101A71DC3C00A3A576 /* flash on.png in Resources */ = {isa = PBXBuildFile; fileRef = 1757580E1A71DC3C00A3A576 /* flash on.png */; };
 		175758111A71DC3C00A3A576 /* flash off.png in Resources */ = {isa = PBXBuildFile; fileRef = 1757580F1A71DC3C00A3A576 /* flash off.png */; };
+		17CFED4B1A7ACEA90081A6F6 /* brillo.png in Resources */ = {isa = PBXBuildFile; fileRef = 17CFED491A7ACEA90081A6F6 /* brillo.png */; };
+		17CFED4C1A7ACEA90081A6F6 /* foco.png in Resources */ = {isa = PBXBuildFile; fileRef = 17CFED4A1A7ACEA90081A6F6 /* foco.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +42,8 @@
 		173760961A717D5A00E2BE75 /* Simple_CameraTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simple_CameraTests.swift; sourceTree = "<group>"; };
 		1757580E1A71DC3C00A3A576 /* flash on.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "flash on.png"; sourceTree = "<group>"; };
 		1757580F1A71DC3C00A3A576 /* flash off.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "flash off.png"; sourceTree = "<group>"; };
+		17CFED491A7ACEA90081A6F6 /* brillo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = brillo.png; sourceTree = "<group>"; };
+		17CFED4A1A7ACEA90081A6F6 /* foco.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = foco.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +124,8 @@
 		1757580D1A71DC3300A3A576 /* img */ = {
 			isa = PBXGroup;
 			children = (
+				17CFED491A7ACEA90081A6F6 /* brillo.png */,
+				17CFED4A1A7ACEA90081A6F6 /* foco.png */,
 				1757580E1A71DC3C00A3A576 /* flash on.png */,
 				1757580F1A71DC3C00A3A576 /* flash off.png */,
 			);
@@ -210,7 +216,9 @@
 				173760861A717D5A00E2BE75 /* Main.storyboard in Resources */,
 				1737608B1A717D5A00E2BE75 /* LaunchScreen.xib in Resources */,
 				175758101A71DC3C00A3A576 /* flash on.png in Resources */,
+				17CFED4C1A7ACEA90081A6F6 /* foco.png in Resources */,
 				173760881A717D5A00E2BE75 /* Images.xcassets in Resources */,
+				17CFED4B1A7ACEA90081A6F6 /* brillo.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -353,7 +361,7 @@
 		1737609B1A717D5A00E2BE75 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon1;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = "Simple Camera/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -363,7 +371,7 @@
 		1737609C1A717D5A00E2BE75 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon1;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = "Simple Camera/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";

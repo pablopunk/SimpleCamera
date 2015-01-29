@@ -25,7 +25,7 @@ class ViewController: UIViewController {
     var currentISO:CGFloat = 100 // para controlar el ISO (de minimo a maximo)
     var currentTimeVal:Int64 = 4 // tiempo
     var timeScale:Int32 = 60     // escala
-    let stepISO:CGFloat = 0.1 // Cuan rapido aumentas y disminuyes
+    let stepISO:CGFloat = 0.2// Cuan rapido aumentas y disminuyes
     var maxISO:CGFloat = 0.0 // Maximo ISO
     var minISO:CGFloat = 0.0 // Minimo ISO
     var minTimeValue:Int64 = 1; // Minimo tiempo
@@ -34,6 +34,12 @@ class ViewController: UIViewController {
     var flasheoV = UIView() // vista del flasheo
     var buttonsView = UIView() // vista de botones
     var botonFlash = UIButton() // boton del flash
+    var buttonsSize : CGFloat = 40.0 // tamanho de los botones por defecto (se cambia en la ejecucion)
+    
+    var brilloImg : UIImageView!
+    var focoImg   : UIImageView!
+    
+    // var isTouching : Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -86,15 +92,30 @@ class ViewController: UIViewController {
         self.view.addSubview(flasheoV)
         
         // Botones
-        buttonsView = UIView(frame: CGRectMake(0, 0, screenWidth/8.0, screenHeight))
+        buttonsSize = screenWidth/6.0
+        buttonsView = UIView(frame: CGRectMake(screenWidth-buttonsSize, 0, buttonsSize, screenHeight))
         //buttonsView.backgroundColor = UIColor.whiteColor()
         self.view.addSubview(buttonsView)
         
         // Boton flash
-        botonFlash = UIButton(frame: CGRectMake(5, 25, 35.0, 35.0))
+        botonFlash = UIButton(frame: CGRectMake(0, 25, buttonsSize, buttonsSize))
+        botonFlash.alpha = 0.5
         botonFlash.setBackgroundImage(UIImage(named: "flash off.png"), forState: .Normal)
+        //botonFlash.backgroundColor = UIColor.whiteColor()
         botonFlash.addTarget(self, action: "changeFlash", forControlEvents:.TouchUpInside)
         buttonsView.addSubview(botonFlash)
+        
+        // Imagenes
+        brilloImg = UIImageView(frame: CGRectMake(0, 0, buttonsSize, buttonsSize))
+        focoImg   = UIImageView(frame: CGRectMake(0, 0, buttonsSize, buttonsSize))
+        brilloImg.image = UIImage(named: "brillo.png")
+        focoImg.image   = UIImage(named: "foco.png"  )
+        brilloImg.alpha = 0.5
+        focoImg.alpha   = 0.5
+        brilloImg.hidden = true
+        focoImg.hidden   = true
+        self.view.addSubview(brilloImg)
+        self.view.addSubview(focoImg)
     }
     
     func beginSession() { // Empezar la sesion
@@ -204,14 +225,49 @@ class ViewController: UIViewController {
         exposeTo(Float(currentISO))
     }
     
+    override func touchesEnded(touches: NSSet, withEvent event: UIEvent) {
+        ocultarBrilloyFoco()
+    }
+    
+    func ocultarBrilloyFoco() {
+        UIView.beginAnimations(nil, context: nil)
+        UIView.setAnimationDuration(0.25);
+        
+        focoImg.hidden   = true
+        brilloImg.hidden = true
+        
+        UIView.commitAnimations()
+    }
+    
     override func touchesMoved(touches: NSSet, withEvent event: UIEvent) {
         var touch = touches.anyObject() as UITouch
         var cambio = touch.locationInView(self.view).x / screenWidth
         var prevLocation = touch.previousLocationInView(self.view).x / screenWidth
+        let touchLocation = touch.locationInView(self.view)
         
-        if touch.locationInView(self.view).y < (screenHeight/2.0) { // Parte izquierda de la pantalla
+        if touchLocation.y < (screenHeight/2.0) { // Parte izquierda de la pantalla
+            if focoImg.hidden { // mostar indicadores
+                self.focoImg.frame = CGRectMake(touchLocation.x, touchLocation.y+self.buttonsSize, self.buttonsSize, self.buttonsSize)
+                
+                UIView.beginAnimations(nil, context: nil)
+                UIView.setAnimationDuration(0.25);
+                    
+                self.focoImg.hidden = false
+                
+                UIView.commitAnimations()
+            }
             calcularEnfoque(prevLocation, conCambio: cambio)
         } else { // Parte derecha de la pantalla
+            if brilloImg.hidden { // mostar indicadores
+                self.brilloImg.frame = CGRectMake(touchLocation.x, touchLocation.y-(2*self.buttonsSize), self.buttonsSize, self.buttonsSize)
+                
+                UIView.beginAnimations(nil, context: nil)
+                UIView.setAnimationDuration(0.25);
+                
+                self.brilloImg.hidden = false
+                
+                UIView.commitAnimations()
+            }
             calcularISO(prevLocation, conCambio: cambio)
         }
         
@@ -219,8 +275,13 @@ class ViewController: UIViewController {
     
     // Detectar el single tap -> SACAR FOTO
     func tapDetected() {
-        flashScreen() // flash en la pantalla
-        
+        ocultarBrilloyFoco()// ocultar los indicadores
+        flashScreen()       // flash en la pantalla
+        sacarFoto()         // guardar la foto
+    }
+    
+    // funcion de sacar foto
+    func sacarFoto() {
         if let output = captureOutput {
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { // Otro hilo para no colgar la UI
                 
@@ -234,16 +295,16 @@ class ViewController: UIViewController {
                         var imageSave = UIImage()
                         
                         switch(deviceorientation.rawValue) {
-                            case 1: // Portrait
-                                imageSave = UIImage(CGImage: image?.CGImage, scale: CGFloat(1.0), orientation: .Right)!
-                            case 2: // Portrait al reves
-                                imageSave = UIImage(CGImage: image?.CGImage, scale: CGFloat(1.0), orientation: .Left)!
-                            case 3: // Landscape izq
-                                imageSave = UIImage(CGImage: image?.CGImage, scale: CGFloat(1.0), orientation: .Up)!
-                            case 4: // Landscape der
-                                imageSave = UIImage(CGImage: image?.CGImage, scale: CGFloat(1.0), orientation: .Down)!
-                            default:
-                                print(" -> Error al reconocer device orientation")
+                        case 1: // Portrait
+                            imageSave = UIImage(CGImage: image?.CGImage, scale: CGFloat(1.0), orientation: .Right)!
+                        case 2: // Portrait al reves
+                            imageSave = UIImage(CGImage: image?.CGImage, scale: CGFloat(1.0), orientation: .Left)!
+                        case 3: // Landscape izq
+                            imageSave = UIImage(CGImage: image?.CGImage, scale: CGFloat(1.0), orientation: .Up)!
+                        case 4: // Landscape der
+                            imageSave = UIImage(CGImage: image?.CGImage, scale: CGFloat(1.0), orientation: .Down)!
+                        default:
+                            print(" -> Error al reconocer device orientation")
                         }
                         UIImageWriteToSavedPhotosAlbum(imageSave, self, nil, nil)
                     }
@@ -310,9 +371,6 @@ class ViewController: UIViewController {
             device.flashMode = AVCaptureFlashMode.Off;
             device.unlockForConfiguration()
         }
-    }
-    
-    override func didRotateFromInterfaceOrientation(fromInterfaceOrientation: UIInterfaceOrientation) {
     }
 
     override func didReceiveMemoryWarning() {
