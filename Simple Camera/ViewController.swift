@@ -42,9 +42,10 @@ class ViewController: UIViewController {
     var focoBar   : UIView!       // barra de indicador de foco
     var barraSize : CGFloat = 3.0 // tamanho de las barras indicadoras
     var colorIso  : UIColor = UIColor(red: 0/255, green: 255/255, blue: 255/255, alpha: 0.7)
-    var colorFoco : UIColor = UIColor(red: 255/255, green: 150/255, blue: 0/255, alpha: 0.7)
+    var colorFoco : UIColor = UIColor(red: 255/255, green: 150/255, blue: 0/255, alpha: 0.9)
     
-    var lockForTouch : Bool = false
+    var lockForTouch : Bool = false // bloqueo del boton de captura
+    var timeToUnlock : CGFloat = 0.7 // tiempo de bloqueo
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -103,7 +104,7 @@ class ViewController: UIViewController {
         self.view.addSubview(buttonsView)
         
         // Boton flash
-        botonFlash = UIButton(frame: CGRectMake(0, 25, buttonsSize, buttonsSize))
+        botonFlash = UIButton(frame: CGRectMake(0, 0, buttonsSize, buttonsSize))
         botonFlash.alpha = 0.5
         botonFlash.setBackgroundImage(UIImage(named: "flash off.png"), forState: .Normal)
         //botonFlash.backgroundColor = UIColor.whiteColor()
@@ -111,11 +112,9 @@ class ViewController: UIViewController {
         buttonsView.addSubview(botonFlash)
         
         // Brillo y Foco
-        //isoBar = UIView(frame: CGRectMake(0, screenHeight-barraSize, screenWidth*(currentISO/maxISO), barraSize))
-        isoBar = UIView(frame: CGRectMake(0, screenHeight-barraSize, screenWidth, barraSize))
+        isoBar = UIView(frame: CGRectMake(0, screenHeight-barraSize, screenWidth*((currentISO-minISO)/(maxISO-minISO)), barraSize))
         isoBar.backgroundColor = colorIso
-        //focoBar = UIView(frame: CGRectMake(0, 0, screenWidth*(currentFocus/maxFocus), barraSize))
-        focoBar = UIView(frame: CGRectMake(0, 0, screenWidth, barraSize))
+        focoBar = UIView(frame: CGRectMake(0, 0, screenWidth*(currentFocus/maxFocus), barraSize))
         focoBar.backgroundColor = colorFoco
         self.view.addSubview(isoBar)
         self.view.addSubview(focoBar)
@@ -270,7 +269,7 @@ class ViewController: UIViewController {
         dispatch_async(dispatch_get_global_queue(priority, 0)) {
             dispatch_async(dispatch_get_main_queue()) {
                 // espero un tiempo para el desbloqueo
-                var timer = NSTimer.scheduledTimerWithTimeInterval(0.7, target: self, selector: Selector("unlock"), userInfo: nil, repeats: false)
+                var timer = NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(self.timeToUnlock), target: self, selector: Selector("unlock"), userInfo: nil, repeats: false)
             }
         }
     }
@@ -349,6 +348,7 @@ class ViewController: UIViewController {
     
     // Cambiar el estado del flash
     func changeFlash() {
+        lock() // bloquear la captura
         if let device = captureDevice {
             if device.flashMode == AVCaptureFlashMode.On {
                 setFlashOff() // Apagar
@@ -358,6 +358,7 @@ class ViewController: UIViewController {
                 botonFlash.setBackgroundImage(UIImage(named: "flash on.png"), forState: .Normal)
             }
         }
+        unlockForTouch() // desbloquear
     }
     
     // Encender el flash
@@ -376,6 +377,10 @@ class ViewController: UIViewController {
             device.flashMode = AVCaptureFlashMode.Off;
             device.unlockForConfiguration()
         }
+    }
+    
+    override func prefersStatusBarHidden() -> Bool {
+        return true
     }
 
     override func didReceiveMemoryWarning() {

@@ -15,6 +15,7 @@
 		173760971A717D5A00E2BE75 /* Simple_CameraTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 173760961A717D5A00E2BE75 /* Simple_CameraTests.swift */; };
 		175758101A71DC3C00A3A576 /* flash on.png in Resources */ = {isa = PBXBuildFile; fileRef = 1757580E1A71DC3C00A3A576 /* flash on.png */; };
 		175758111A71DC3C00A3A576 /* flash off.png in Resources */ = {isa = PBXBuildFile; fileRef = 1757580F1A71DC3C00A3A576 /* flash off.png */; };
+		E29CB4871AEDA6C00045CC9D /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = E29CB4861AEDA6C00045CC9D /* icon.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +41,7 @@
 		173760961A717D5A00E2BE75 /* Simple_CameraTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simple_CameraTests.swift; sourceTree = "<group>"; };
 		1757580E1A71DC3C00A3A576 /* flash on.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "flash on.png"; sourceTree = "<group>"; };
 		1757580F1A71DC3C00A3A576 /* flash off.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "flash off.png"; sourceTree = "<group>"; };
+		E29CB4861AEDA6C00045CC9D /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +122,7 @@
 		1757580D1A71DC3300A3A576 /* img */ = {
 			isa = PBXGroup;
 			children = (
+				E29CB4861AEDA6C00045CC9D /* icon.png */,
 				1757580E1A71DC3C00A3A576 /* flash on.png */,
 				1757580F1A71DC3C00A3A576 /* flash off.png */,
 			);
@@ -208,6 +211,7 @@
 			files = (
 				175758111A71DC3C00A3A576 /* flash off.png in Resources */,
 				173760861A717D5A00E2BE75 /* Main.storyboard in Resources */,
+				E29CB4871AEDA6C00045CC9D /* icon.png in Resources */,
 				1737608B1A717D5A00E2BE75 /* LaunchScreen.xib in Resources */,
 				175758101A71DC3C00A3A576 /* flash on.png in Resources */,
 				173760881A717D5A00E2BE75 /* Images.xcassets in Resources */,
