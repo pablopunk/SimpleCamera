@@ -28,6 +28,8 @@ class ViewController: UIViewController {
     let stepISO:CGFloat = 0.2// Cuan rapido aumentas y disminuyes
     var maxISO:CGFloat = 0.0 // Maximo ISO
     var minISO:CGFloat = 0.0 // Minimo ISO
+    var maxFocus:CGFloat = 1 // Maximo Foco
+    var minFocus:CGFloat = 0 // Minimo Foco
     var minTimeValue:Int64 = 1; // Minimo tiempo
     var maxTimeValue:Int64 = 1; // Maximo tiempo
     
@@ -36,10 +38,13 @@ class ViewController: UIViewController {
     var botonFlash = UIButton() // boton del flash
     var buttonsSize : CGFloat = 40.0 // tamanho de los botones por defecto (se cambia en la ejecucion)
     
-    var brilloImg : UIImageView!
-    var focoImg   : UIImageView!
+    var isoBar : UIView!          // barra de indicador de ISO
+    var focoBar   : UIView!       // barra de indicador de foco
+    var barraSize : CGFloat = 3.0 // tamanho de las barras indicadoras
+    var colorIso  : UIColor = UIColor(red: 0/255, green: 255/255, blue: 255/255, alpha: 0.7)
+    var colorFoco : UIColor = UIColor(red: 255/255, green: 150/255, blue: 0/255, alpha: 0.7)
     
-    // var isTouching : Bool = false
+    var lockForTouch : Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -105,17 +110,16 @@ class ViewController: UIViewController {
         botonFlash.addTarget(self, action: "changeFlash", forControlEvents:.TouchUpInside)
         buttonsView.addSubview(botonFlash)
         
-        // Imagenes
-        brilloImg = UIImageView(frame: CGRectMake(0, 0, buttonsSize, buttonsSize))
-        focoImg   = UIImageView(frame: CGRectMake(0, 0, buttonsSize, buttonsSize))
-        brilloImg.image = UIImage(named: "brillo.png")
-        focoImg.image   = UIImage(named: "foco.png"  )
-        brilloImg.alpha = 0.5
-        focoImg.alpha   = 0.5
-        brilloImg.hidden = true
-        focoImg.hidden   = true
-        self.view.addSubview(brilloImg)
-        self.view.addSubview(focoImg)
+        // Brillo y Foco
+        //isoBar = UIView(frame: CGRectMake(0, screenHeight-barraSize, screenWidth*(currentISO/maxISO), barraSize))
+        isoBar = UIView(frame: CGRectMake(0, screenHeight-barraSize, screenWidth, barraSize))
+        isoBar.backgroundColor = colorIso
+        //focoBar = UIView(frame: CGRectMake(0, 0, screenWidth*(currentFocus/maxFocus), barraSize))
+        focoBar = UIView(frame: CGRectMake(0, 0, screenWidth, barraSize))
+        focoBar.backgroundColor = colorFoco
+        self.view.addSubview(isoBar)
+        self.view.addSubview(focoBar)
+        
     }
     
     func beginSession() { // Empezar la sesion
@@ -159,7 +163,7 @@ class ViewController: UIViewController {
     
     func focusTo(value : Float) { // Cambia el enfoque
         if let device = captureDevice {
-            if device.isFocusModeSupported(AVCaptureFocusMode.Locked) { // Soporta el enfoque manua
+            if device.isFocusModeSupported(AVCaptureFocusMode.Locked) { // Soporta el enfoque manual
                 if(device.lockForConfiguration(nil)) {
                     device.setFocusModeLockedWithLensPosition(value, completionHandler: { (time) -> Void in
                         //
@@ -225,59 +229,60 @@ class ViewController: UIViewController {
         exposeTo(Float(currentISO))
     }
     
-    override func touchesEnded(touches: NSSet, withEvent event: UIEvent) {
-        ocultarBrilloyFoco()
-    }
     
-    func ocultarBrilloyFoco() {
-        UIView.beginAnimations(nil, context: nil)
-        UIView.setAnimationDuration(0.25);
-        
-        focoImg.hidden   = true
-        brilloImg.hidden = true
-        
-        UIView.commitAnimations()
-    }
-    
-    override func touchesMoved(touches: NSSet, withEvent event: UIEvent) {
-        var touch = touches.anyObject() as UITouch
+    override func touchesMoved(touches: Set<NSObject>, withEvent event: UIEvent) {
+        var touch = touches.first as! UITouch
         var cambio = touch.locationInView(self.view).x / screenWidth
         var prevLocation = touch.previousLocationInView(self.view).x / screenWidth
         let touchLocation = touch.locationInView(self.view)
         
+        lock() // bloquear el boton de la camara
+        
         if touchLocation.y < (screenHeight/2.0) { // Parte izquierda de la pantalla
-            if focoImg.hidden { // mostar indicadores
-                self.focoImg.frame = CGRectMake(touchLocation.x, touchLocation.y+self.buttonsSize, self.buttonsSize, self.buttonsSize)
-                
-                UIView.beginAnimations(nil, context: nil)
-                UIView.setAnimationDuration(0.25);
-                    
-                self.focoImg.hidden = false
-                
-                UIView.commitAnimations()
-            }
+            
+            focoBar.frame = CGRectMake(0, 0, screenWidth*(currentFocus/maxFocus), barraSize)
+            
             calcularEnfoque(prevLocation, conCambio: cambio)
+            
         } else { // Parte derecha de la pantalla
-            if brilloImg.hidden { // mostar indicadores
-                self.brilloImg.frame = CGRectMake(touchLocation.x, touchLocation.y-(2*self.buttonsSize), self.buttonsSize, self.buttonsSize)
-                
-                UIView.beginAnimations(nil, context: nil)
-                UIView.setAnimationDuration(0.25);
-                
-                self.brilloImg.hidden = false
-                
-                UIView.commitAnimations()
-            }
+            
+            isoBar.frame = CGRectMake(0, screenHeight-barraSize, screenWidth*((currentISO-minISO)/(maxISO-minISO)), barraSize)
+             
             calcularISO(prevLocation, conCambio: cambio)
         }
+        
+        unlockForTouch() // desbloquearlo
         
     }
     
     // Detectar el single tap -> SACAR FOTO
     func tapDetected() {
-        ocultarBrilloyFoco()// ocultar los indicadores
-        flashScreen()       // flash en la pantalla
-        sacarFoto()         // guardar la foto
+        if (!self.lockForTouch) { // si no estoy cambiando los parametros (iso, foco)
+            flashScreen()       // flash en la pantalla
+            sacarFoto()         // guardar la foto
+        }
+    }
+    
+    // Desbloquear el candado para poder sacar fotos
+    func unlockForTouch() {
+        let priority = DISPATCH_QUEUE_PRIORITY_DEFAULT
+        // abro un nuevo hilo que espere un tiempo para desbloquear el candado
+        dispatch_async(dispatch_get_global_queue(priority, 0)) {
+            dispatch_async(dispatch_get_main_queue()) {
+                // espero un tiempo para el desbloqueo
+                var timer = NSTimer.scheduledTimerWithTimeInterval(0.7, target: self, selector: Selector("unlock"), userInfo: nil, repeats: false)
+            }
+        }
+    }
+
+    // funcion para el desbloqueo con timer
+    func unlock() {
+        self.lockForTouch = false
+    }
+    
+    // funcion para el bloqueo
+    func lock() {
+        self.lockForTouch = true
     }
     
     // funcion de sacar foto

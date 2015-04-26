@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>F87B4BD3-A636-46B4-ADBB-1EB655E4459C</string>
+	<key>IDESourceControlProjectName</key>
+	<string>Simple Camera</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>362929E2E2F86FCEA79A05A0802C77E9C72212DE</key>
+		<string>https://github.com/pablopunk/SimpleCamera</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Simple Camera.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>362929E2E2F86FCEA79A05A0802C77E9C72212DE</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/pablopunk/SimpleCamera</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>362929E2E2F86FCEA79A05A0802C77E9C72212DE</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>362929E2E2F86FCEA79A05A0802C77E9C72212DE</string>
+			<key>IDESourceControlWCCName</key>
+			<string>SimpleCamera</string>
+		</dict>
+	</array>
+</dict>
+</plist>
